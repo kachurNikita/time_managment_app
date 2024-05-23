@@ -1,0 +1,14 @@
+Day 2
+I was thinking, what type of time managment technique shoud i use in order to achieve desired result. And came to conclusion.
+Eisenhower Matrix could be a good idea to create. I heardabout this method before and even used it, but not to long.
+I think it is a time to give it  a second chance  by emplementing this as a software.
+
+My goal for today, what i am trying to acheive:
+1. Store data in data structure. I would probably create a object with all matrix quadrats, and inside i would store multiple objects
+created with some data already. 
+2. I also would like prioritize  tasks inside each of the quadrats, especially those one, which is not time consuming (1 h/max).
+3. Another my tought is bind real-time to tasks. I want to specify, that for example from 9 to 5 i have to do my job, and
+See the tasks which is job related, simply saying, from 9 to 5 i don't want see urgent and important while  the job.
+4. Also, it is for me personally do some small breaks at the job, between 5-10 minutes. Maybe work for 45 minutes straight,
+and after that give a 10 minutes break,but while this break, job time is stops the other urgent tasks is pops up. 10 minutes
+break maybe pop  up the tasks from important tab,such as: pay a bills, apply for another job, or read some book or article 
