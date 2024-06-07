@@ -1,6 +1,7 @@
-class  Quadrat:
-    def __init__(self):
-        self.quadrat = {
+class Quadrat:
+    
+    def create_quadrat(self):
+        return {
             'work': {
                 'small': [],
                 'medium': [],
