@@ -19,11 +19,10 @@ Productivity Enhancements:
 Implementation of work and rest intervals to optimize productivity.
 Intelligent task prioritization based on urgency and importance, ensuring that important tasks are addressed promptly.
 
-## Technologies Used
+## Technologies
 
 - Python
-- SQL
-- Flask
+- Flask or Django
 - AWS (EC2, S3, RDS)
 - Tableau
 
