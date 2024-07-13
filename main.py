@@ -4,6 +4,8 @@ import threading
 import sqlite3
 import os
 
+
+# Definition of 'Eisenhover_matrix class'
 # Eisenhover_matrix class
 
 class EisenhoverMatrix:
@@ -29,21 +31,22 @@ class EisenhoverMatrix:
     #     sqlite_connection = sqlite3.connect(matrix_name)
     #     cursor = sqlite_connection.cursor()
     #     return cursor.execute('SELECT name FROM sqlite_schema WHERE type ="table" name NOT LIKE "sqlite_%"')
-
+    
+    # Function which allows to check wheter quadrat with this name is exists, in order to prevent duplication 
     def is_quadrat_exist(self, quadrat_name):
-        con = sqlite3.connect('eisenhover_matrix.db')
+        quadrat_exist = False
+        con = sqlite3.connect("eisenhover_matrix.db")
         cursor = con.cursor()
         quadrat_list_query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY Name"
-        result = cursor.execute(quadrat_list_query)
-        for quadrat in result.fetchall():
-            return ''.join(quadrat) == quadrat_name
-    
-    # def is_quadrats_limit(self):
-    #     quadrat_iterator = 0
-    #     for key in self.matrix.keys():
-    #         quadrat_iterator += 1
-    #     return quadrat_iterator < 4
-
+        if cursor.execute(quadrat_list_query).fetchall():
+            for i in cursor.execute(quadrat_list_query).fetchall():
+                if ''.join(i) == quadrat_name:
+                    quadrat_exist = not quadrat_exist
+            return quadrat_exist
+        else:
+            return quadrat_exist
+        
+    # Function which allows to check how many tables (quadrats) at database (MAX 4 allowed)
     def is_quadrats_limit(self):
         quadrat_counter = 0
         quadrat_list_query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY Name"
@@ -52,65 +55,81 @@ class EisenhoverMatrix:
         result = cursor.execute(quadrat_list_query)
         for quadrat in result.fetchall():
             quadrat_counter += 1
-        return quadrat_counter > 4
+        return quadrat_counter < 4
+
+    def is_task_exist(self, quadrat_name, task):
+        sqlite_connection = sqlite3.connect("eisenhover_matrix.db")
+        cursor = sqlite_connection.cursor()
+        reslt = cursor.execute(f"SELECT task FROM {quadrat_name}")
+        for i in reslt.fetchall():
+            if ''.join(i).lower() == task.lower():
+                return True
     
-    
-    # def is_task_exist(self, quadrat_name, task, task_type):
-    #     if self.is_quadrat_exist(quadrat_name):
-    #         return task in self.matrix[quadrat_name][task_type]
-    #     else: raise Exception(f"Quadrat {quadrat_name} is not exist")
-    
-    # def create_quadrat(self, quadrat_type):
-    #     if self.is_quadrats_limit():
-    #         if not self.is_quadrat_exist(quadrat_type):
-    #             self.matrix[quadrat_type] = Quadrat().create_quadrat()
-    #             return self.matrix
-    #         else:
-    #             raise Exception (f"The quadrat {quadrat_type} is already exist")
-    #     else:
-    #         raise Exception ("No more quadrats can be added")
-    
+    # Function which allows create table (quadrat) at database (matrix)
     def create_quadrat(self, quadrat_name):
-        if not self.is_quadrats_limit():
+        if  self.is_quadrats_limit():
             if not self.is_quadrat_exist(quadrat_name):
                 con = sqlite3.connect('eisenhover_matrix.db')
                 cursor = con.cursor()
-                try:
-                    cursor.execute(f"CREATE TABLE {quadrat_name}(personal, work)")
-                except sqlite3.OperationalError as e:
-                    if 'already exists' in str(e):
-                        print(f'Quadrat with name {quadrat_name} is alredy exists')
-                    else:
-                        print('Unexpected error occurred')
-            raise Exception('Quadrat')
-                
+                cursor.execute(f"CREATE TABLE {quadrat_name} ('task', 'group')")
+                print(f'table {quadrat_name} is successfully created!')
+            else:
+                raise Exception(f'Quadrat with name {quadrat_name} is already exist!')
+        else:
+            raise Exception(f'Max quadrats limit')
         
-    # def delete_quadrat(self, quadrat_name):
-    #     if self.is_quadrat_exist(quadrat_name):
-    #         self.matrix.pop(quadrat_name)
-    #     else:
-    #         raise Exception (f"Quadrat {quadrat_name} is not exist")
-        
-    # def add_task(self, task, task_type, quadrat_name):
-    #     if self.is_quadrat_exist(quadrat_name):
-    #         if not self.is_task_exist(quadrat_name, task, task_type):
-    #             self.matrix[quadrat_name][task_type].append(task)
-    #             print(f"Task {task} added to {quadrat_name}")
-    #         else:
-    #             raise Exception("Same task is already exist in a quadrat!")
-    #     else:
-    #         raise Exception(f"Quadrat {quadrat_name} is not exist")
+    # Function which allows delete table (quadrat) from database (matrix)  
+    def delete_quadrat(self, quadrat_name):
+        if self.is_quadrat_exist(quadrat_name):
+            con = sqlite3.connect('eisenhover_matrix.db')
+            cursor = con.cursor()
+            cursor.execute(f"DROP TABLE IF EXISTS {quadrat_name}")
+            print(f'Quadrat {quadrat_name} successfully deleted!')
+        else:
+            print(f'Quadrat with name {quadrat_name} is not exist!')
     
-    # def delete_task(self, quadrat_name, task, task_type): 
-    #     if self.is_task_exist(quadrat_name, task, task_type):
-    #         self.matrix[quadrat_name][task_type].remove(task)
-    #         print(f"Task {task} deleted")
-    #     else:
-    #         raise Exception (f"Task | {task} | doesn't exist")
-        
+    # Function which allows add task to table's column (quadrat)
+    def add_task(self, quadrat_name, task, task_type):
+        if self.is_quadrat_exist(quadrat_name):
+            if not self.is_task_exist(quadrat_name, task):
+                    con = sqlite3.connect('eisenhover_matrix.db')
+                    cursor = con.cursor()
+                    cursor.execute(f''' INSERT INTO {quadrat_name}('task', 'group') VALUES('{task}', '{task_type}')''')
+                    con.commit()
+                    print('Values is added')
+            else:
+                print(f'Task {task} is already exist!')
+        else:
+            raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
+    #  Function which allows us to delete task from quadrat (row from column in database)
+    def delete_task(self, quadrat_name, task):
+        if self.is_quadrat_exist(quadrat_name):
+            if self.is_task_exist(quadrat_name, task):
+                con = sqlite3.connect('eisenhover_matrix.db')
+                cursor = con.cursor()
+                cursor.execute(f'''DELETE FROM {quadrat_name} WHERE task = "{task}" ''')
+                con.commit()
+                print(f"Task {task} successfully deleted!")
+            else:
+                raise Exception (f"Task {task} doesn't exist!")
+        else:
+            raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
 
 matrix = EisenhoverMatrix()
 
-matrix.create_quadrat('dsds')
+# matrix.create_quadrat('main')
+# matrix.add_task('main', 'sport', 'personal')
+# matrix.add_task('main', 'jiujitsu', 'personal')
+# matrix.add_task('main', 'Call to ', 'work')
+# matrix.delete_quadrat('main')
+matrix.delete_task('main', 'sport')
+
+
+# Work on add_task function - 1. check if quadrat exist 2. check if the task exists
+# Work on delete_task function, check wheter quadrat and task are exists 
+
+# Implement  to one function where connection to sqlite 
+
+
 
 
