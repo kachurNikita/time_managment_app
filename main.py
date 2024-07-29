@@ -1,25 +1,26 @@
 import datetime
-import threading
 import sqlite3
 import os
-# import pandas as pd
-
 from datetime import date
+from time import strftime
 
-# name = ['John', 'Mary', 'Sherlock']
-# age = [11, 12, 13]
-# df = pd.DataFrame({ 'Name': name, 'Age': age })
-# df.index.name = 'ID'
-
-# df.to_excel('spreadsheet.xlsx')
-
-today = date.today()
-weekday = date.weekday(today)
+TODAY = date.today()
+WEEKDAY = date.weekday(TODAY)
 
 # Definition of 'Eisenhover_matrix class'
 class EisenhoverMatrix:
-    def __init__(self):
-        self.matrix = {}
+    
+    # Function wichallows us get a current time 
+    def get__current_time(self):
+        return strftime('%H:%M')
+        
+    # Function which allows us to get day of the week 
+    def get_weekday(self, day_id):
+        return self.sqlite_con(f"SELECT weekday FROM weekdays WHERE weekday_ID = '{day_id}'")
+    
+    # Function which allows us to retrieve the most important quadrat based on the time and the day!
+    def get_mos(self):
+        pass
     
     # Function wich allows us make connection to sqlite3 database and specific commands execution 
     def sqlite_con(self, statement):
@@ -28,7 +29,6 @@ class EisenhoverMatrix:
         result = cursor.execute(statement)
         con.commit()
         return result
-    
     
     # Executes only ones and will create table for storing "qudrat importance" (have to be optimized )
     def create_quadrat_importance_table(self):  
@@ -42,19 +42,20 @@ class EisenhoverMatrix:
     
     # Function which creates a weekdays table (have to be optimized ) 
     def create_weekdays_table(self):
-        self.sqlite_con(f"CREATE TABLE weekdays('weekday ID', 'weekday')")
+        self.sqlite_con(f"CREATE TABLE weekdays('weekday_ID', 'weekday')")
     
     # Function which add weekdays and their id to database
     def add_values_weekdays_table(self, weekdays):
         for key in weekdays:
-            self.sqlite_con(f'''INSERT INTO weekdays('weekday ID', 'weekday')
+            self.sqlite_con(f'''INSERT INTO weekdays('weekday_ID', 'weekday')
                             VALUES('{key}', '{str(weekdays[key])}')
                             ''')
         
      # Function wich returns the weekday
-    def return_day(self, day):
-         return self.sqlite_con(f"SELECT weekday FROM weekdays WHERE weekday ID ='{day}'")
-         
+    def return_day(self, day_id):
+         weekday = self.sqlite_con(f"SELECT weekday FROM weekdays WHERE weekday_ID = '{day_id}'")
+         return ''.join(weekday.fetchone())
+
     # Function which allows to check wheter quadrat with this name is exists, in order to prevent duplication 
     def is_quadrat_exist(self, quadrat_name):
         quadrat_exist = False
@@ -71,8 +72,7 @@ class EisenhoverMatrix:
     # Function which allows to check how many tables (quadrats) at database (MAX 4 allowed)
     def is_quadrats_limit(self):
         quadrat_counter = 0
-        quadrat_list_query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY Name"
-        quadrat_list_query_response = self.sqlite_con(quadrat_list_query)
+        quadrat_list_query_response = self.sqlite_con("SELECT name FROM sqlite_master WHERE type='table' ORDER BY Name")
         for quadrat in quadrat_list_query_response.fetchall():
             quadrat_counter += 1
         return quadrat_counter < 4
@@ -110,7 +110,7 @@ class EisenhoverMatrix:
             if not self.is_task_exist(quadrat_name, task):
                 self.sqlite_con(f'''
                                    INSERT INTO {quadrat_name}('task', 'group', 'date', 'weekday')
-                                   VALUES('{task}', '{task_type}', '{today}', '{self.return_day(date.weekday(today))}')
+                                   VALUES('{task}', '{task_type}', '{today}', '{self.return_day(weekday)}')
                                    ''')
                 print('Values is added')
             else:
@@ -129,51 +129,6 @@ class EisenhoverMatrix:
         else:
             raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
         
-        
 matrix = EisenhoverMatrix()
-# matrix.create_weekdays_table()
-# matrix.add_values_weekdays_table(weekdays)
-# matrix.delete_quadrat('quadrat_importance')
-# matrix.create_quadrat_importance_table()
-        
-# matrix.create_quadrat('important', 1)
-# matrix.add_task('test', 'sport', 'personal')
-matrix.delete_quadrat('important')
+matrix.create_quadrat('imp', 1)
 
-
-# Create function - for optimization where i see that commands repeats (break down sqlite_con function: 1. specificaly for sqlite connections, func for commands, such as: create table and Insert into)
-
-
-
-
-
-# Create function which will display to me what i have to do at the current moment
-# if i don't have any quadrats it will tell me to create one 
-#  if it is only one quadrat  task will be added there and i have to choose button (work or personal)
-# It identify day and also it identify time 
-#  if it is a Weekends work task will not be displayed 
-
-
-# Have a window with input: ADD TASK and after task specification give quadrat name if none exists 
-# Function add task where i can just simply write the task, and it will ask at which quadrat i want add this task,
-# if there are no quadrats, will call function create quadrate and will add this task to the database
-# Store somewhere acomplished tasks 
-# Right now one of mine main goals is display tasks based on the day and time period
-
-# At each launch, program have to check wheter it is something left from previous day, if yes, schedule it for today
-# Detect current timeof opening and based on  time display the tasks or task
-# For UA / maybe have a task and display task and at the right side make a window in order to break down the problem if it dificult to start
-
-# Create function display task:
-# Identify day
-# identify current time 
-# identify the table which is exists (green, yeelow, blue, red) - green (urgent-important) - make 
-# When creating table, create separate database in order to 
-
-
-
-# Acomplished tasks  
-# Create column at database which stands for the date and time +
-# Also i have to track weekday and probably add it to database as well in order +
-# Adjust functionality  for sqlite connection, becasue to much code becasue of it +
-# create seperate database for storing my default values such as: quadrats importance and weekdays +
