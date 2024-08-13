@@ -1,0 +1,52 @@
+# Acomplished tasks  
+# Create column at database which stands for the date and time +
+# Also i have to track weekday and probably add it to database as well in order +
+# Adjust functionality  for sqlite connection, becasue to much code becasue of it +
+# create seperate database for storing my default values such as: quadrats importance and weekdays +
+#  implement return day function +
+# Create function which identifys current time !!! +
+
+
+
+
+ Create function wich allows usto check does quadrat's importance exist
+
+# Create function - for optimization where i see that commands repeats 
+# (break down sqlite_con function: 1. specificaly for sqlite connections, func for commands, such as: create table and Insert into)
+
+
+
+# Create function which will display to me what i have to do at the current moment
+# if i don't have any quadrats it will tell me to create one 
+#  if it is only one quadrat  task will be added there and i have to choose button (work or personal)
+# It identify day and also it identify time 
+#  if it is a Weekends work task will not be displayed 
+
+
+# Have a window with input: ADD TASK and after task specification give quadrat name if none exists 
+# Function add task where i can just simply write the task, and it will ask at which quadrat i want add this task,
+# if there are no quadrats, will call function create quadrate and will add this task to the database
+# Store somewhere acomplished tasks 
+# Right now one of mine main goals is display tasks based on the day and time period
+
+# At each launch, program have to check wheter it is something left from previous day, if yes, schedule it for today
+# Detect current timeof opening and based on  time display the tasks or task
+# For UA / maybe have a task and display task and at the right side make a window in order to break down the problem if it dificult to start
+
+# Create function display task:
+# Identify day
+# identify current time 
+# identify the table which is exists (green, yeelow, blue, red) - green (urgent-important) - make 
+# When creating table, create separate database in order to 
+
+
+
+weekdays = {
+    0: 'Monday',
+    1: 'Tuesday',
+    2: 'Wednesday',
+    3: 'Thursday',
+    4: 'Friday',
+    5: 'Saturday',
+    6: 'Sunday',
+}
