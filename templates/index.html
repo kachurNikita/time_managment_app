@@ -7,9 +7,10 @@
 </head>
 <body>
     <h1>EISENHOVER MATRIX</h1>
-<form method="POST">
-    <button name="quadrat" type="submit" value="quadrat">quadrat</button>
-    <button name="task" type="submit" value="task">task</button>
-</form>
+    <form method="POST">
+        {% for task in tasks %}
+        <button type="submit", name="btn" value="{{task|join('')}}">{{task|join('')}}</button>
+        {% endfor %}
+    </form>
 </body>
 </html>

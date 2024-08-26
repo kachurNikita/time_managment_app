@@ -13,11 +13,10 @@ WEEKDAY = date.weekday(TODAY)
 # Definition of 'Eisenhover_matrix class'
 class EisenhoverMatrix:
     
-    
     # def iterable_object(self,itterable_object):
     #     for i in itterable_object:
     #         return i 
-        
+    
     # Connection to sqlite database
     def sqlite_con(self, statement):
         conn = sqlite3.connect("EisenhoverMatrix.db")
@@ -54,12 +53,12 @@ class EisenhoverMatrix:
             if counter in from_list_to_dict and self.is_quadrat_emtpy(from_list_to_dict[counter], task_type):
                 return self.is_quadrat_emtpy(from_list_to_dict[counter], task_type)
     
-    # Function which allows us to check  is quadrat empty
+    # Function which allows us to check  is quadrat empty ------>
     def is_quadrat_emtpy(self, quadrat_name, task_type):
         response = self.sqlite_con(f"SELECT task FROM '{quadrat_name}' WHERE task_group = '{task_type}'").fetchall()
         if response != []:
-            return response 
-        return False
+            return response
+        return 
         
     # Function which alows us check what type of tasks to display based on day, time, and priority
     def get_task_type(self):
@@ -68,7 +67,7 @@ class EisenhoverMatrix:
         return 'personal'
         
     # Function which displays tasks
-    def display_tasks(self):
+    def show_tasks(self):
         task_type = self.get_task_type()
         tasks_to_do = self.get_quadrats(task_type)
         return tasks_to_do
@@ -144,12 +143,11 @@ class EisenhoverMatrix:
             else: raise Exception(f'Quadrat with name {quadrat_name} is already exist!')
         else: raise Exception(f'Max quadrats limit')
        
-            
     # Function which allows delete table (quadrat) from database (matrix)  
     def delete_quadrat(self, quadrat_name):
         if self.is_quadrat_exist(quadrat_name):
             self.sqlite_con(f"DROP TABLE IF EXISTS {quadrat_name}")
-            self.sqlite_con(f'''DELETE FROM  quadrat_importance WHERE quadrat_name  = "{quadrat_name}"''')
+            self.sqlite_con(f'''DELETE FROM quadrat_importance WHERE quadrat_name = "{quadrat_name}"''')
             print(f'Quadrat {quadrat_name} successfully deleted!')
         else: print(f'Quadrat with name {quadrat_name} is not exist!')
     
@@ -162,7 +160,7 @@ class EisenhoverMatrix:
                                    VALUES('{task}', '{task_type}', '{TODAY}', '{self.return_day()}')
                                    ''')
                 print('Values is added')
-                self.display_tasks()
+                return self.show_tasks()
             else: print(f'Task {task} is already exist!')
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
         
@@ -172,13 +170,15 @@ class EisenhoverMatrix:
             if self.is_task_exist(quadrat_name, task):
                 self.sqlite_con(f'''DELETE FROM {quadrat_name} WHERE task = "{task}"''')
                 print(f"Task {task} successfully deleted!")
-                self.display_tasks()
+                self.show_tasks()
             else: raise Exception (f"Task {task} doesn't exist!")
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
         
 matrix = EisenhoverMatrix()
+ 
+matrix.delete_quadrat('urgent')
 
-# Implement itteration methods 
-
-#  Create function, which will checks quadrats, if they are exists, display them, if not, run function to create and then  add task 
-# Create Function which will check is there is any tasks left from previous day, if yes, just substitute day 
+# use weekdays api and in case if not work, use static from database
+# Don't use Chatgpt if not working (set a limits)
+# In order to response faster to  user regarding task, immidiatelly send request to CHATGPT API and create hidden block at HTML,
+# Create additional database, in case ifsomething will wrong with current one 
