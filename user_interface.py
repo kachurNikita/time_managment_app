@@ -1,25 +1,31 @@
-from flask import Flask
-from markupsafe import escape
+from flask import Flask, render_template, request, url_for, g
+from apscheduler.schedulers.background import BackgroundScheduler
+from chat_gtp_API import chat_gpt_response
 from main import EisenhoverMatrix
-from flask import render_template, request, url_for
-from chat_api_test import ai_response
+from markupsafe import escape
+
 
 app = Flask(__name__)
 
+@app.route('/')
+@app.route('/<explanation>')
+def index(explanation = None):
+    return render_template('index.html', tasks=check_tasks_hourly())
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        task = request.form.get('btn')
-        sub_task = ai_response(task)
-        return problem_breakdown(sub_task)
-    return render_template('index.html', tasks=matrix.show_tasks())
+# -------
+def check_tasks_hourly(): 
+        return matrix.show_tasks()
+    
 
+# Backgroundscheduler instance
+scheduler = BackgroundScheduler()
 
-def problem_breakdown(sub_task):
-        return f'<p>{sub_task}</p>'
-
+# EisenhoverMatrix instance
 matrix = EisenhoverMatrix()
 
+# Each hour function will be executed in order to check current time and based on it show tasks to do
+scheduler.add_job(check_tasks_hourly, 'interval', minutes=60)
 
-# Create main page, with options to choose: create quadrat, add task, display tasks
+# starts scheduler instance
+scheduler.start()
+

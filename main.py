@@ -1,8 +1,10 @@
+from chat_gtp_API import chat_gpt_response
+from datetime import date
+from time import strftime
+import tempfile
 import datetime
 import sqlite3
 import os
-from datetime import date
-from time import strftime
 
 # Get full date 
 TODAY = date.today()
@@ -12,11 +14,7 @@ WEEKDAY = date.weekday(TODAY)
 
 # Definition of 'Eisenhover_matrix class'
 class EisenhoverMatrix:
-    
-    # def iterable_object(self,itterable_object):
-    #     for i in itterable_object:
-    #         return i 
-    
+        
     # Connection to sqlite database
     def sqlite_con(self, statement):
         conn = sqlite3.connect("EisenhoverMatrix.db")
@@ -47,7 +45,7 @@ class EisenhoverMatrix:
         
     # Function which allows us to retrieve most important quadrat
     def get_quardat_by_importance(self, quadrats, task_type):
-        for counter in range(4):
+        for counter in range(1, 5):
             from_list_to_dict = dict(quadrats)
             counter = str(counter)
             if counter in from_list_to_dict and self.is_quadrat_emtpy(from_list_to_dict[counter], task_type):
@@ -55,22 +53,21 @@ class EisenhoverMatrix:
     
     # Function which allows us to check  is quadrat empty ------>
     def is_quadrat_emtpy(self, quadrat_name, task_type):
-        response = self.sqlite_con(f"SELECT task FROM '{quadrat_name}' WHERE task_group = '{task_type}'").fetchall()
+        response = self.sqlite_con(f"SELECT task, task_breakdown FROM '{quadrat_name}' WHERE task_group = '{task_type}'").fetchall()
         if response != []:
             return response
-        return 
         
     # Function which alows us check what type of tasks to display based on day, time, and priority
     def get_task_type(self):
         if not self.is_today_weekend(self.return_day()) and self.is_job_time():
             return 'work'
         return 'personal'
-        
+            
     # Function which displays tasks
     def show_tasks(self):
         task_type = self.get_task_type()
-        tasks_to_do = self.get_quadrats(task_type)
-        return tasks_to_do
+        tasks = self.get_quadrats(task_type)
+        return tasks
         
     # Function which allows us to check is there is a weekend
     def is_today_weekend(self, weekday):
@@ -129,15 +126,22 @@ class EisenhoverMatrix:
     
     # Function which allows to check does task exist (implement itteration)
     def is_task_exist(self, quadrat_name, task):
-        for i in self.sqlite_con(f"SELECT task FROM {quadrat_name}").fetchall():
+        for i in self.sqlite_con(f'SELECT task FROM "{quadrat_name}"').fetchall():
             if ''.join(i).lower() == task.lower():
                 return True
     
-    # Function which allows create table (quadrat) at database (matrix) (have to be optimized )
+    # Function which allows create table (quadrat) at database (matrix) (have to be optimized )    
     def create_quadrat(self, quadrat_name, importance):
         if  self.is_quadrats_limit():
             if not self.is_quadrat_exist(quadrat_name):
-                self.sqlite_con(f"CREATE TABLE {quadrat_name}('task', 'task_group', 'date', 'weekday')")
+                self.sqlite_con(f'''CREATE TABLE '{quadrat_name}' (
+                        task TEXT NOT NULL,
+                        task_breakdown TEXT NOT NULL,
+                        task_group TEXT NOT NULL,
+                        date TEXT NOT NULL,
+                        weekday TEXT NOT NULL
+                        )
+                    ''')
                 self.assign_quadrat_importance(quadrat_name, importance)
                 print(f'Quadrat {quadrat_name} is successfully created!')
             else: raise Exception(f'Quadrat with name {quadrat_name} is already exist!')
@@ -146,7 +150,7 @@ class EisenhoverMatrix:
     # Function which allows delete table (quadrat) from database (matrix)  
     def delete_quadrat(self, quadrat_name):
         if self.is_quadrat_exist(quadrat_name):
-            self.sqlite_con(f"DROP TABLE IF EXISTS {quadrat_name}")
+            self.sqlite_con(f"DROP TABLE IF EXISTS '{quadrat_name}'")
             self.sqlite_con(f'''DELETE FROM quadrat_importance WHERE quadrat_name = "{quadrat_name}"''')
             print(f'Quadrat {quadrat_name} successfully deleted!')
         else: print(f'Quadrat with name {quadrat_name} is not exist!')
@@ -155,11 +159,13 @@ class EisenhoverMatrix:
     def add_task(self, quadrat_name, task, task_type):
         if self.is_quadrat_exist(quadrat_name):
             if not self.is_task_exist(quadrat_name, task):
+                breakdown_problem = chat_gpt_response(task)
                 self.sqlite_con(f'''
-                                   INSERT INTO {quadrat_name}('task', 'task_group', 'date', 'weekday')
-                                   VALUES('{task}', '{task_type}', '{TODAY}', '{self.return_day()}')
+                                   INSERT INTO "{quadrat_name}"('task', 'task_breakdown', 'task_group', 'date', 'weekday')
+                                   VALUES('{task}', "{breakdown_problem}", '{task_type}', '{TODAY}', '{self.return_day()}')
                                    ''')
                 print('Values is added')
+                # get_task_breakdown(quadrat_name, task)
                 return self.show_tasks()
             else: print(f'Task {task} is already exist!')
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
@@ -174,11 +180,24 @@ class EisenhoverMatrix:
             else: raise Exception (f"Task {task} doesn't exist!")
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
         
-matrix = EisenhoverMatrix()
- 
-matrix.delete_quadrat('urgent')
 
+matrix = EisenhoverMatrix()
+# matrix.show_tasks()
+# matrix.create_quadrat('URGENT IMPORTANT', 1)
+# matrix.delete_quadrat('NOT-URGENT IMPORTANT')
+matrix.add_task('URGENT IMPORTANT', 'Become mindull', 'personal')
+
+
+
+
+
+
+
+# Create function which will display all tasks work and personal and from allquadrats
+
+# Change method of tasks adding, i want to already buiti n quadrats in applications, inorder to not specify IMPORTANCE parameter 
+
+# make uinit tests
 # use weekdays api and in case if not work, use static from database
 # Don't use Chatgpt if not working (set a limits)
-# In order to response faster to  user regarding task, immidiatelly send request to CHATGPT API and create hidden block at HTML,
-# Create additional database, in case ifsomething will wrong with current one 
+# Create additional database, in case if something will wrong with current one 
