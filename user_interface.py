@@ -1,31 +1,25 @@
-from flask import Flask, render_template, request, url_for, g
-from apscheduler.schedulers.background import BackgroundScheduler
-from chat_gtp_API import chat_gpt_response
-from main import EisenhoverMatrix
-from markupsafe import escape
-
+from flask import Flask, render_template, request, redirect, flash, url_for
 
 app = Flask(__name__)
+app.secret_key = '4b7c3a2b8c9e1d4f7e6a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e'
+
 
 @app.route('/')
-@app.route('/<explanation>')
-def index(explanation = None):
-    return render_template('index.html', tasks=check_tasks_hourly())
+def home():
+    return redirect('/login')
 
-# -------
-def check_tasks_hourly(): 
-        return matrix.show_tasks()
-    
 
-# Backgroundscheduler instance
-scheduler = BackgroundScheduler()
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password  = request.form['password']
 
-# EisenhoverMatrix instance
-matrix = EisenhoverMatrix()
+        if not username or not password:
+            flash('username and password are required', 'error')
+            redirect(url_for('login'))
+    return render_template('/login.html')
 
-# Each hour function will be executed in order to check current time and based on it show tasks to do
-scheduler.add_job(check_tasks_hourly, 'interval', minutes=60)
 
-# starts scheduler instance
-scheduler.start()
-
+if __name__ == '__main__':
+    app.run(debug=True)
