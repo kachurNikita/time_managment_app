@@ -3,26 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='dist/output.css') }}" rel="stylesheet">
     <title>Login</title>
 </head>
-<body>
-    <h1>Login Page</h1>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+        <h1 class="text-2xl font-semibold text-center text-gray-800 mb-6">Login Page</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="mb-4">
+                    {% for category, message in messages %}
+                        <li class="text-red-500">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-    <ul>
-        {% for category, message in messages %}
-        <li style="color:red">{{message}}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
-    <form action="/login" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" >
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" >
-        <button type="submit">Login</button>
-    </form>
+        <form action="/login" method="POST" class="space-y-4">
+            <div>
+                <label for="username" class="block text-gray-700">Username:</label>
+                <input type="text" id="username" name="username" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <label for="password" class="block text-gray-700">Password:</label>
+                <input type="password" id="password" name="password" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-between items-center">
+                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Login
+                </button>
+            </div>
+        </form>
+
+        <p class="mt-4 text-center text-gray-700">Don't have an account? 
+            <a href="{{ url_for('register') }}" class="text-blue-500 hover:underline">Register here</a>
+        </p>
+    </div>
 </body>
 </html>

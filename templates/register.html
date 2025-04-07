@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register</title>
+  <link href="{{ url_for('static', filename='dist/output.css') }}" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+    <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Register</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="mb-4">
+          {% for category, message in messages %}
+            <li class="text-red-500 text-sm">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('register') }}" method="POST" class="space-y-4">
+      <div>
+        <label for="username" class="block text-gray-700">Username:</label>
+        <input type="text" name="username" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div>
+        <label for="password" class="block text-gray-700">Password:</label>
+        <input type="password" name="password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        Register
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-gray-700">
+      Already have an account?
+      <a href="{{ url_for('login') }}" class="text-blue-500 hover:underline">Login here</a>
+    </p>
+  </div>
+</body>
+</html>

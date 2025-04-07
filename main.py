@@ -12,6 +12,17 @@ TODAY = date.today()
 # Weekday by ID 
 WEEKDAY = date.weekday(TODAY)
 
+# weekdays
+weekdays = {
+    0: 'Sunday',
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday'
+}
+
 # Definition of 'Eisenhover_matrix class'
 class EisenhoverMatrix:
         
@@ -46,25 +57,25 @@ class EisenhoverMatrix:
                                    ''')
         return ''.join(response.fetchone())
     
-    # Function which get quadrats for us 
-    def get_quadrats(self, task_type):
+    # Function which get quadrats 
+    def get_quadrats(self, task_type, user_id):
         quadrats = self.sqlite_con(f'''SELECT * FROM quadrat_importance''').fetchall()
         if quadrats:
-            return self.get_quardat_by_importance(quadrats, task_type)
+            return self.get_quardat_by_importance(quadrats, task_type, user_id)
         else: raise Exception('Qudarats are not exists')
         
     # Function which allows us to retrieve most important quadrat
-    def get_quardat_by_importance(self, quadrats, task_type):
+    def get_quardat_by_importance(self, quadrats, task_type, user_id):
         for counter in range(1, 5):
             from_list_to_dict = dict(quadrats)
             counter = str(counter)
-            if counter in from_list_to_dict and self.is_quadrat_emtpy(from_list_to_dict[counter], task_type):
-                return self.is_quadrat_emtpy(from_list_to_dict[counter], task_type)
+            if counter in from_list_to_dict and self.is_quadrat_emtpy(from_list_to_dict[counter], task_type, user_id):
+                return self.is_quadrat_emtpy(from_list_to_dict[counter], task_type, user_id)
     
     # Function which allows us to check is quadrat empty ------>
-    def is_quadrat_emtpy(self, quadrat_name, task_type):
+    def is_quadrat_emtpy(self, quadrat_name, task_type, user_id):
         response = self.sqlite_con(f'''
-                                   SELECT task, task_breakdown FROM '{quadrat_name}' WHERE task_group = "{task_type}"
+                                   SELECT task, task_breakdown FROM '{quadrat_name}' WHERE task_group = "{task_type}" AND user_id = "{user_id}"
                                    ''').fetchall()
         if response != []:
             return [response,  quadrat_name]
@@ -77,16 +88,11 @@ class EisenhoverMatrix:
             return 'personal'
             
     # Function which displays current tasks
-    def show_current_tasks(self):
+    def show_current_tasks(self, user_id):
         task_type = self.get_task_type()
-        current_tasks = self.get_quadrats(task_type)
-        tasks = self.show_tasks()
-        return [current_tasks, tasks]
+        current_tasks = self.get_quadrats(task_type, user_id)
+        return current_tasks
     
-    # Function which allows us to display all tasks
-    def show_tasks(self):
-        return self.sqlite_con('''
-                        SELECT * FROM TASKS''').fetchall()
         
     # Function which allows us to check is there is a weekend
     def is_today_weekend(self, weekday):
@@ -125,10 +131,10 @@ class EisenhoverMatrix:
     
     # Function which add weekdays and their id to database 
     def add_values_weekdays_table(self, weekdays):
-        for key in weekdays:
+        for value, key in weekdays.items():  # Now the value is the number, and key is the day
             self.sqlite_con(f'''INSERT INTO weekdays('weekday_ID', 'weekday')
-                            VALUES('{key}', '{str(weekdays[key])}')
-                            ''')
+                                VALUES('{value}', '{key}')
+                                ''')
             
     # Function which allows to check wheter quadrat with this name is exists, in order to prevent duplication (implement itteration)
     def is_quadrat_exist(self, quadrat_name):
@@ -168,7 +174,8 @@ class EisenhoverMatrix:
                         task_breakdown TEXT NOT NULL,
                         task_group TEXT NOT NULL,
                         date TEXT NOT NULL,
-                        weekday TEXT NOT NULL
+                        weekday TEXT NOT NULL,
+                        user_id TEXT NOT NULL
                         )
                     ''')
                 self.assign_quadrat_importance(quadrat_name, importance)
@@ -189,23 +196,19 @@ class EisenhoverMatrix:
         else: print(f'Quadrat with name {quadrat_name} is not exist!')
     
     # Function which allows add task to table's column (quadrat)
-    def add_task(self, quadrat_name, task, task_type):
+    def add_task(self, quadrat_name, task, task_type, user_id):
         if self.is_quadrat_exist(quadrat_name):
             if not self.is_task_exist(quadrat_name, task):
                 breakdown_problem = chat_gpt_response(task)
-                data = (task, breakdown_problem, task_type, TODAY, self.return_day())
-                self.add_task_to_pool(task, breakdown_problem)
+                data = (task, breakdown_problem, task_type, TODAY, self.return_day(), user_id)
                 self.sqlite_con(f'''
-                                   INSERT INTO "{quadrat_name}"('task', 'task_breakdown', 'task_group', 'date', 'weekday')
-                                   VALUES(?, ?, ?, ?, ?)
+                                   INSERT INTO "{quadrat_name}"('task', 'task_breakdown', 'task_group', 'date', 'weekday', 'user_id')
+                                   VALUES(?, ?, ?, ?, ?, ?)
                                    ''', data)
                 print('Values is added')
             else: print(f'Task {task} is already exist!')
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
     
-    # Function wich allows us add task to to pool of tasks 
-    def add_task_to_pool(self, task, breakdown_problem):
-        self.sqlite_con(f'''INSERT INTO TASKS('task', 'breakdown_problem') VALUES(?, ?)''', (task, breakdown_problem))
                                
     #  Function which allows us to delete task from quadrat (row from column in database)
     def delete_task(self, quadrat_name, task):
@@ -220,26 +223,8 @@ class EisenhoverMatrix:
         
 
 matrix = EisenhoverMatrix()
-# matrix.delete_quadrat()
-# matrix.add_task_to_pool('Ride bycicle', 'lololo')
 
 
-# delete task function
-# display all availiable tasks besides other column (create newtable with all tasks and retrieve data from there)
-# prevent user submit tasks without provided parameters
 
 
-# Make function of deleting tasks fro page
-# Make function for adding tasks from page
-# Create function which will display all tasks work and personal and from allquadrats 
 
-
-# Create function, which will get all tasks and will display them to the user:
-# 1. create table, which will store all task, just one columnt task
-# 2. And  just simply retrieve this task from table and return it,  together with quadrat_name and tasks
-# 3. Create function, which will delete task from this table as
-# Maybe at the moment when task added, add it to other table, in order to easyaly get them and display
-# make uinit tests
-# use weekdays api and in case if not work, use static from database
-# Don't use Chatgpt if not working (set a limits)
-# Create additional database, in case if something will wrong with current one 
