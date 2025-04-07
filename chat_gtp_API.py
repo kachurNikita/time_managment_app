@@ -4,7 +4,7 @@ import requests
 import openai
 
 # Access key which is generated when account created 
-OPENAI_API_KEY = 'sk-6DeOQTpymgZ-Uw5HoqHrQDbqo2FBQm9n99fD2T2Ln7T3BlbkFJWNs9BEEArTvWW37HMljEUBwECDZlcdYbZFIO5Oq6IA'
+
 
 # OpenAI instance
 client = OpenAI(api_key=OPENAI_API_KEY)
