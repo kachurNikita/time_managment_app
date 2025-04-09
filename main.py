@@ -196,16 +196,16 @@ class EisenhoverMatrix:
         else: print(f'Quadrat with name {quadrat_name} is not exist!')
     
     # Function which allows add task to table's column (quadrat)
-    def add_task(self, quadrat_name, task, task_type, user_id):
+    def add_task(self, quadrat_name, task, breakdown_problem, task_type, user_id):
         if self.is_quadrat_exist(quadrat_name):
             if not self.is_task_exist(quadrat_name, task):
-                breakdown_problem = chat_gpt_response(task)
-                data = (task, breakdown_problem, task_type, TODAY, self.return_day(), user_id)
-                self.sqlite_con(f'''
-                                   INSERT INTO "{quadrat_name}"('task', 'task_breakdown', 'task_group', 'date', 'weekday', 'user_id')
-                                   VALUES(?, ?, ?, ?, ?, ?)
-                                   ''', data)
-                print('Values is added')
+                if breakdown_problem:
+                    data = (task, breakdown_problem, task_type, TODAY, self.return_day(), user_id)
+                    self.sqlite_con(f'''
+                                    INSERT INTO "{quadrat_name}"('task', 'task_breakdown', 'task_group', 'date', 'weekday', 'user_id')
+                                    VALUES(?, ?, ?, ?, ?, ?)
+                                    ''', data)
+                    print('Values is added')
             else: print(f'Task {task} is already exist!')
         else: raise Exception(f'Quadrat with name {quadrat_name} is not exist!')
     
