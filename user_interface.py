@@ -4,7 +4,7 @@ from main import EisenhoverMatrix
 from chat_gtp_API import chat_gpt_response
 
 app = Flask(__name__)
-app.secret_key = '4b7c3a2b8c9e1d4f7e6a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e'
+app.secret_key = 'secret_key_not_real_one'
 
 @app.route('/')
 def home():
